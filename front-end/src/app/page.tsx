@@ -1,7 +1,8 @@
+"use client";
 import React, { useCallback, useState } from 'react';
 import { IOrdinance } from '@/types';
 import { FeedPage } from '../../views/FeedPage';
-import { Avatars } from './Avatars'; // Import Avatars component
+import { Avatars } from '../components/Avatars'; // Adjust the import path as needed
 
 export default function Page() {
   const [data, setData] = useState<IOrdinance[]>([]);
@@ -48,50 +49,45 @@ export default function Page() {
     });
   };
 
-// Function to augment data
-function augmentData(rawData: IOrdinance[]) {
-  const acc = {
-    acc_affordable_housing_development_score: 0,
-    acc_tenant_protections_score: 0,
-    acc_homelessness_and_supportive_housing_score: 0,
-    acc_faster_permitting_process_and_bureaucracy_score: 0,
-    acc_land_use_and_zoning_reform: 0,
+  // Function to augment data
+  function augmentData(rawData: IOrdinance[]) {
+    const acc = {
+      acc_affordable_housing_development_score: 0,
+      acc_tenant_protections_score: 0,
+      acc_homelessness_and_supportive_housing_score: 0,
+      acc_faster_permitting_process_and_bureaucracy_score: 0,
+      acc_land_use_and_zoning_reform: 0,
+    }
+
+    return rawData.map((_in: IOrdinance) => {
+      return {
+        ..._in,
+        acc_affordable_housing_development_score:
+          (acc.acc_affordable_housing_development_score +=
+            Number(_in.affordable_housing_development_score) || 0),
+        acc_tenant_protections_score: (acc.acc_tenant_protections_score +=
+          Number(_in.tenant_protections_score) || 0),
+        acc_homelessness_and_supportive_housing_score:
+          (acc.acc_homelessness_and_supportive_housing_score +=
+            Number(_in.homelessness_and_supportive_housing_score) || 0),
+        acc_faster_permitting_process_and_bureaucracy_score:
+          (acc.acc_faster_permitting_process_and_bureaucracy_score +=
+            Number(_in.faster_permitting_process_and_bureaucracy_score) || 0),
+        acc_land_use_and_zoning_reform: (acc.acc_land_use_and_zoning_reform +=
+          Number(_in.land_use_and_zoning_reform) || 0),
+      }
+    })
   }
 
-  return rawData.map((_in: IOrdinance) => {
-    return {
-      ..._in,
-      acc_affordable_housing_development_score:
-        (acc.acc_affordable_housing_development_score +=
-          Number(_in.affordable_housing_development_score) || 0),
-      acc_tenant_protections_score: (acc.acc_tenant_protections_score +=
-        Number(_in.tenant_protections_score) || 0),
-      acc_homelessness_and_supportive_housing_score:
-        (acc.acc_homelessness_and_supportive_housing_score +=
-          Number(_in.homelessness_and_supportive_housing_score) || 0),
-      acc_faster_permitting_process_and_bureaucracy_score:
-        (acc.acc_faster_permitting_process_and_bureaucracy_score +=
-          Number(_in.faster_permitting_process_and_bureaucracy_score) || 0),
-      acc_land_use_and_zoning_reform: (acc.acc_land_use_and_zoning_reform +=
-        Number(_in.land_use_and_zoning_reform) || 0),
-    }
-  })
-}
-
-export default function Page() {
-  const [data, setData] = useState<IOrdinance[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [selectedAvatar, setSelectedAvatar] = useState<number | null>(null)
-
-   // Handle avatar click
-   const handleAvatarClick = useCallback(async (avatarIndex: number) => {
+  // Handle avatar click
+  const handleAvatarClick = useCallback(async (avatarIndex: number) => {
     if (selectedCategory && avatarIndex != null) {
       const rawData = await fetchData(selectedCategory, avatarIndex);
       const augmentedData = augmentData(rawData);
       setData(augmentedData);
       setSelectedAvatar(avatarIndex);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, fetchData]);
 
   return (
     <>
